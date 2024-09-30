@@ -33,10 +33,10 @@ export function EditArea() {
   function renderComponents(components: Component[]): React.ReactNode {
     return components.map((component) => {
       const config = componentConfig[component.name];
-      if (!config?.component) return null;
+      if (!config?.dev) return null;
 
       return React.createElement(
-        config.component,
+        config.dev,
         {
           key: component.id,
           id: component.id,
