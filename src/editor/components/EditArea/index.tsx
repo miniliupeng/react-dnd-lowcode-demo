@@ -1,9 +1,11 @@
 import React, { MouseEventHandler, useEffect, useState } from "react";
 import { Component, useComponetsStore } from "../../stores/components";
 import { useComponentConfigStore } from "../../stores/component-config";
+import HoverMask from "../HoverMask";
+import SelectedMask from "../SelectedMask";
 
 export function EditArea() {
-  const { components, addComponent } = useComponetsStore();
+  const { components, curComponentId, setCurComponentId } = useComponetsStore();
   const { componentConfig } = useComponentConfigStore();
   // useEffect(() => {
   //   addComponent(
@@ -39,6 +41,7 @@ export function EditArea() {
           key: component.id,
           id: component.id,
           name: component.name,
+          styles: component.styles,
           ...config.defaultProps,
           ...component.props,
         },
@@ -51,8 +54,6 @@ export function EditArea() {
 
   const handleMouseOver: MouseEventHandler = (e) => {
     const path = e.nativeEvent.composedPath();
-    console.log(path);
-    
     for (let i = 0; i < path.length; i += 1) {
       const ele = path[i] as HTMLElement;
 
@@ -64,10 +65,44 @@ export function EditArea() {
     }
   };
 
+  const handleClick: MouseEventHandler = (e) => {
+    const path = e.nativeEvent.composedPath();
+
+    for (let i = 0; i < path.length; i += 1) {
+      const ele = path[i] as HTMLElement;
+
+      const componentId = ele.dataset?.componentId;
+      if (componentId) {
+        setCurComponentId(+componentId);
+        return;
+      }
+    }
+  };
+
   return (
-    <div className="h-full" onMouseOver={handleMouseOver} >
+    <div
+      className="edit-area h-full"
+      onMouseOver={handleMouseOver}
+      onMouseLeave={() => setHoverComponentId(undefined)}
+      onClick={handleClick}
+    >
       {/* <pre>{JSON.stringify(components, null, 2)}</pre> */}
       {renderComponents(components)}
+      {hoverComponentId && hoverComponentId !== curComponentId && (
+        <HoverMask
+          portalWrapperClassName="portal-wrapper"
+          containerClassName="edit-area"
+          componentId={hoverComponentId}
+        />
+      )}
+      {curComponentId && (
+        <SelectedMask
+          portalWrapperClassName="portal-wrapper"
+          containerClassName="edit-area"
+          componentId={curComponentId}
+        />
+      )}
+      <div className="portal-wrapper"></div>
     </div>
   );
 }

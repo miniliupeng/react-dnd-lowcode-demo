@@ -1,21 +1,28 @@
+import { CSSProperties } from "react";
 import { create } from "zustand";
 
 export interface Component {
   id: number;
   name: string;
   props: any;
+  styles?: CSSProperties;
+  desc: string;
   children?: Component[];
   parentId?: number;
 }
 
 interface State {
   components: Component[];
+  curComponentId?: number | null;
+  curComponent: Component | null;
 }
 
 interface Action {
   addComponent: (component: Component, parentId?: number) => void;
   deleteComponent: (componentId: number) => void;
   updateComponentProps: (componentId: number, props: any) => void;
+  updateComponentStyles: (componentId: number, styles: CSSProperties, replace?: boolean) => void;
+  setCurComponentId: (componentId: number | null) => void;
 }
 
 export const useComponetsStore = create<State & Action>((set, get) => ({
@@ -27,6 +34,13 @@ export const useComponetsStore = create<State & Action>((set, get) => ({
       desc: "页面",
     },
   ],
+  curComponentId: null,
+  curComponent: null,
+  setCurComponentId: (componentId) =>
+    set((state) => ({
+      curComponentId: componentId,
+      curComponent: getComponentById(componentId, state.components),
+    })),
   addComponent: (component, parentId) =>
     set((state) => {
       if (parentId) {
@@ -69,6 +83,17 @@ export const useComponetsStore = create<State & Action>((set, get) => ({
       const component = getComponentById(componentId, state.components);
       if (component) {
         component.props = { ...component.props, ...props };
+
+        return { components: [...state.components] };
+      }
+
+      return { components: [...state.components] };
+    }),
+  updateComponentStyles: (componentId, styles, replace) =>
+    set((state) => {
+      const component = getComponentById(componentId, state.components);
+      if (component) {
+        component.styles = replace ? {...styles} : {...component.styles, ...styles};
 
         return { components: [...state.components] };
       }
